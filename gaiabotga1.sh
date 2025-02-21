@@ -57,6 +57,9 @@ import threading
 api_key = "$api_key"
 api_url = "$api_url"
 
+# Define the number of threads from shell input
+num_threads = $num_threads
+
 # Reading user messages from message.txt
 with open('message.txt', 'r') as file:
     user_messages = [msg.strip() for msg in file.readlines() if msg.strip()] 
@@ -113,7 +116,7 @@ def start_thread():
 
 # Starting multi-threading for sending random messages
 threads = []
-for _ in range(int(num_threads)):
+for _ in range(num_threads):
     thread = threading.Thread(target=start_thread, daemon=True)  # Using daemon so it can be stopped with CTRL+C
     threads.append(thread)
     thread.start()
