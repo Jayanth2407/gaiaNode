@@ -58,7 +58,7 @@ api_key = "$api_key"
 api_url = "$api_url"
 
 # Reading user messages from message.txt
-with open('https://github.com/Jayanth2407/gaiaNode/blob/main/message.txt', 'r') as file:
+with open('message.txt', 'r') as file:
     user_messages = [msg.strip() for msg in file.readlines() if msg.strip()] 
 
 if not user_messages:
