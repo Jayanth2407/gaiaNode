@@ -49,7 +49,7 @@ EOF
             fi
         else
             echo "⚠️ [ERROR] API: $api_url | Status: $http_status | Retrying..."
-            sleep 0.5
+            sleep 1.5
         fi
     done
 }
