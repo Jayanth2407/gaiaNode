@@ -1,5 +1,6 @@
 #!/bin/bash
-
+# curl -O https://raw.githubusercontent.com/Jayanth2407/gaiaNode/main/gaib.sh && chmod +x gaib.sh && \ 
+# ./gaib.sh
 # Function to check if NVIDIA CUDA or GPU is present
 check_cuda() {
     if command -v nvcc &> /dev/null || command -v nvidia-smi &> /dev/null; then
