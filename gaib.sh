@@ -1,28 +1,61 @@
 #!/bin/bash
-# curl -O https://raw.githubusercontent.com/Jayanth2407/gaiaNode/main/gaib.sh && chmod +x gaib.sh && \ 
-# ./gaib.sh
-# Function to check if NVIDIA CUDA or GPU is present
-check_cuda() {
-    if command -v nvcc &> /dev/null || command -v nvidia-smi &> /dev/null; then
-        echo "✅ NVIDIA GPU with CUDA detected. Proceeding with execution..."
-    else
-        echo "❌ NVIDIA GPU Not Found. This Bot is Only for GPU Users."
-        echo "Press Enter to go back and Run on GPU Device..."  
-        read -r  # Waits for user input
 
-        # Restart installer
-        rm -rf GaiaNodeInstallet.sh
-        curl -O https://raw.githubusercontent.com/abhiag/Gaianet_installer/main/GaiaNodeInstallet.sh && chmod +x GaiaNodeInstallet.sh && ./GaiaNodeInstallet.sh
+# Function to handle the API request
+send_request() {
+    local message="$1"
+    local api_key="$2"
+    local api_url="$3"
 
-        exit 1
-    fi
+    while true; do
+        # Prepare the JSON payload
+        json_data=$(cat <<EOF
+{
+    "messages": [
+        {"role": "system", "content": "You are a helpful assistant."},
+        {"role": "user", "content": "$message"}
+    ]
+}
+EOF
+        )
+
+        # Send the request using curl and capture both the response and status code
+        response=$(curl -s -w "\n%{http_code}" -X POST "$api_url" \
+            -H "Authorization: Bearer $api_key" \
+            -H "Accept: application/json" \
+            -H "Content-Type: application/json" \
+            -d "$json_data")
+
+        # Extract the HTTP status code from the response
+        http_status=$(echo "$response" | tail -n 1)
+        body=$(echo "$response" | head -n -1)
+
+        if [[ "$http_status" -eq 200 ]]; then
+            # Check if the response is valid JSON
+            echo "$body" | jq . > /dev/null 2>&1
+            if [ $? -eq 0 ]; then
+                # Print the question and response content
+                echo "✅ [SUCCESS] API: $api_url | Message: '$message'"
+
+                # Extract the response message from the JSON
+                response_message=$(echo "$body" | jq -r '.choices[0].message.content')
+                
+                # Print both the question and the response
+                echo "Question: $message"
+                echo "Response: $response_message"
+                break  # Exit loop if request was successful
+            else
+                echo "⚠️ [ERROR] Invalid JSON response! API: $api_url"
+                echo "Response Text: $body"
+            fi
+        else
+            echo "⚠️ [ERROR] API: $api_url | Status: $http_status | Retrying in 2s..."
+            sleep 1
+        fi
+    done
 }
 
-# Run the check
-check_cuda
-
-# List of general questions
-general_questions=(
+# Define a list of predefined messages
+user_messages=(
     "What is 1 + 1"
     "What is 2 + 2"
     "What is 3 + 1"
@@ -57,114 +90,36 @@ general_questions=(
     "What is 25 - 5"
 )
 
-# Function to get a random general question
-generate_random_general_question() {
-    echo "${general_questions[$RANDOM % ${#general_questions[@]}]}"
-}
+# Ask the user to input API Key and Domain URL
+echo -n "Enter your API Key: "
+read api_key
+echo -n "Enter the Domain URL: "
+read api_url
 
-# Function to handle the API request
-send_request() {
-    local message="$1"
-    local api_key="$2"
-
-    echo "📬 Sending Question: $message"
-
-    json_data=$(cat <<EOF
-{
-    "messages": [
-        {"role": "system", "content": "You are a helpful assistant."},
-        {"role": "user", "content": "$message"}
-    ]
-}
-EOF
-    )
-
-    response=$(curl -s -w "\n%{http_code}" -X POST "$API_URL" \
-        -H "Authorization: Bearer $api_key" \
-        -H "Accept: application/json" \
-        -H "Content-Type: application/json" \
-        -d "$json_data")
-
-    http_status=$(echo "$response" | tail -n 1)
-    body=$(echo "$response" | head -n -1)
-
-    # Debugging: Print the entire raw response for inspection
-    echo "📊 Full Response: $body"
-
-    if [[ "$http_status" -eq 200 ]]; then
-        # Extract the 'content' from the JSON response
-        response_message=$(echo "$body" | grep -oP '"content":.*?[^\\]",' | sed 's/"content": "//;s/",//')
-
-        # Check if the response is not empty
-        if [[ -z "$response_message" ]]; then
-            echo "⚠️ Response content is empty!"
-        else
-            ((success_count++))  # Increment success count
-            echo "✅ [SUCCESS] Response $success_count Received!"
-            echo "📝 Question: $message"
-            echo "💬 Response: $response_message"
-        fi
-    else
-        echo "⚠️ [ERROR] API request failed | Status: $http_status | Retrying..."
-        sleep 2
-    fi
-}
-
-# Asking for API Key (loops until a valid key is provided)
-while true; do
-    echo -n "Enter your API Key: "
-    read -r api_key
-
-    if [ -z "$api_key" ]; then
-        echo "❌ Error: API Key is required!"
-        echo "🔄 Restarting the installer..."
-
-        # Restart installer
-        rm -rf GaiaNodeInstallet.sh
-        curl -O https://raw.githubusercontent.com/abhiag/Gaianet_installer/main/GaiaNodeInstallet.sh && chmod +x GaiaNodeInstallet.sh && ./GaiaNodeInstallet.sh
-
-        exit 1
-    else
-        break  # Exit loop if API key is provided
-    fi
-done
-
-# Asking for duration
-echo -n "⏳ How many hours do you want the bot to run? "
-read -r bot_hours
-
-# Convert hours to seconds
-if [[ "$bot_hours" =~ ^[0-9]+$ ]]; then
-    max_duration=$((bot_hours * 3600))
-    echo "🕒 The bot will run for $bot_hours hour(s) ($max_duration seconds)."
-else
-    echo "⚠️ Invalid input! Please enter a number."
+# Exit if the API Key or URL is empty
+if [ -z "$api_key" ] || [ -z "$api_url" ]; then
+    echo "Error: Both API Key and Domain URL are required!"
     exit 1
 fi
 
-# Hidden API URL (moved to the bottom)
-API_URL="https://hashtag.gaia.domains/v1/chat/completions"
-
-# Display thread information
+# Set number of threads to 1 (default)
+num_threads=1
 echo "✅ Using 1 thread..."
-echo "⏳ Waiting 30 seconds before sending the first request..."
-sleep 30
 
-echo "🚀 Starting requests..."
-start_time=$(date +%s)
-success_count=0  # Initialize success counter
+# Function to run the single thread
+start_thread() {
+    while true; do
+        # Pick a random message from the predefined list
+        random_message="${user_messages[$RANDOM % ${#user_messages[@]}]}"
+        send_request "$random_message" "$api_key" "$api_url"
+    done
+}
 
-while true; do
-    current_time=$(date +%s)
-    elapsed=$((current_time - start_time))
+# Start the single thread
+start_thread &
 
-    if [[ "$elapsed" -ge "$max_duration" ]]; then
-        echo "🛑 Time limit reached ($bot_hours hours). Exiting..."
-        echo "📊 Total successful responses: $success_count"
-        exit 0
-    fi
+# Wait for the thread to finish (this will run indefinitely)
+wait
 
-    random_message=$(generate_random_general_question)
-    send_request "$random_message" "$api_key"
-    sleep 0
-done
+# Graceful exit handling (SIGINT, SIGTERM)
+trap "echo -e '\n🛑 Process terminated. Exiting gracefully...'; exit 0" SIGINT SIGTERM
