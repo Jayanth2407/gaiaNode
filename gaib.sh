@@ -104,7 +104,7 @@ fi
 
 # Set number of threads to 1 (default)
 num_threads=1
-echo "✅ Using 1 thread..."
+echo "✅ Using $num_threads thread..."
 
 # Function to run the single thread
 start_thread() {
