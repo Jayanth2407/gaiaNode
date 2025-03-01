@@ -48,7 +48,7 @@ EOF
                 echo "Response Text: $body"
             fi
         else
-            echo "⚠️ [ERROR] API: $api_url | Status: $http_status | Retrying in 2s..."
+            echo "⚠️ [ERROR] API: $api_url | Status: $http_status | Retrying..."
             sleep 2
         fi
     done
@@ -102,11 +102,11 @@ if [ -z "$api_key" ] || [ -z "$api_url" ]; then
     exit 1
 fi
 
-# Set number of threads to 1 (default)
-num_threads=1
-echo "✅ Using $num_threads thread..."
+# Set number of threads (default to 5, but you can adjust this)
+num_threads=4
+echo "✅ Using $num_threads threads..."
 
-# Function to run the single thread
+# Function to run a single thread
 start_thread() {
     while true; do
         # Pick a random message from the predefined list
@@ -115,10 +115,12 @@ start_thread() {
     done
 }
 
-# Start the single thread
-start_thread &
+# Start multiple threads
+for ((i=1; i<=num_threads; i++)); do
+    start_thread &
+done
 
-# Wait for the thread to finish (this will run indefinitely)
+# Wait for all threads to finish (this will run indefinitely)
 wait
 
 # Graceful exit handling (SIGINT, SIGTERM)
