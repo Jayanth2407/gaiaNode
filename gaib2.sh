@@ -271,7 +271,7 @@ EOF
         fi
     else
         echo "⚠️ [ERROR] API request failed | Status: $http_status | Retrying."
-        sleep 5
+        sleep 2
     fi
 }
 
