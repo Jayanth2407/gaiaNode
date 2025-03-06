@@ -110,7 +110,7 @@ if [ -z "$api_key" ] || [ -z "$api_url" ]; then
 fi
 
 # Set number of threads (default to 5, but you can adjust this)
-num_threads=5
+num_threads=10
 echo "✅ Using $num_threads threads..."
 
 # Function to run a single thread
