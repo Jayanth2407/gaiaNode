@@ -109,8 +109,16 @@ if [ -z "$api_key" ] || [ -z "$api_url" ]; then
     exit 1
 fi
 
-# Set number of threads (default to 5, but you can adjust this)
-num_threads=10
+# Ask the user to input the number of threads
+echo -n "Enter the number of threads to run: "
+read num_threads
+
+# Validate the number of threads
+if ! [[ "$num_threads" =~ ^[0-9]+$ ]]; then
+    echo "Error: Number of threads must be a positive integer!"
+    exit 1
+fi
+
 echo "✅ Using $num_threads threads..."
 
 # Function to run a single thread
@@ -119,6 +127,8 @@ start_thread() {
         # Pick a random message from the predefined list
         random_message="${user_messages[$RANDOM % ${#user_messages[@]}]}"
         send_request "$random_message" "$api_key" "$api_url"
+        # Add a small delay to avoid overwhelming the API
+        sleep 1
     done
 }
 
