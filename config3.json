@@ -2,20 +2,20 @@
     "address": "",
     "chat": "https://huggingface.co/gaianet/Qwen2-0.5B-Instruct-GGUF/resolve/main/Qwen2-0.5B-Instruct-Q5_K_M.gguf",
     "chat_ctx_size": "4096",
-    "chat_batch_size": "32",
-    "description": "This GaiaNet node config with a Qwen2 0.5B model.",
+    "chat_batch_size": "128",  
+    "description": "Optimized GaiaNet node with Qwen2 0.5B for high throughput.",
     "domain": "gaia.domains",
     "embedding": "https://huggingface.co/gaianet/Nomic-embed-text-v1.5-Embedding-GGUF/resolve/main/nomic-embed-text-v1.5.f16.gguf",
     "embedding_collection_name": "default",
     "embedding_ctx_size": "4096",
-    "embedding_batch_size": "4096",
+    "embedding_batch_size": "8192",  
     "llamaedge_port": "8080",
     "prompt_template": "chatml",
-    "rag_prompt": "Use the following pieces of context to answer the user's question.\nIf you don't know the answer, just say that you don't know, don't try to make up an answer.\n----------------\n",
+    "rag_prompt": "Use the following context to provide concise and accurate answers:\n----------------\n",
     "reverse_prompt": "",
     "snapshot": "",
-    "system_prompt": "You are a helpful, respectful, and honest assistant. Always answer accurately, while being safe.",
+    "system_prompt": "You are a fast and efficient AI assistant. Provide accurate and to-the-point responses.",
     "rag_policy": "system-message",
-    "qdrant_limit": "1",
-    "qdrant_score_threshold": "0.5"
-  }
+    "qdrant_limit": "3",  
+    "qdrant_score_threshold": "0.4"
+}
