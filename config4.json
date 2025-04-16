@@ -1,6 +1,6 @@
 {
     "address": "",
-    "description": "High-throughput Qwen 2.5 0.5B Instruct",
+    "description": "High-throughput DeepSeek-R1-Distill-Qwen-7B-Q2_K",
     "domain": "gaia.domains",
     "llamaedge_port": "8080",
     "chat": "https://huggingface.co/gaianet/DeepSeek-R1-Distill-Qwen-7B-GGUF/resolve/main/DeepSeek-R1-Distill-Qwen-7B-Q2_K.gguf",
